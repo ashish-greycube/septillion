@@ -91,6 +91,10 @@ app_license = "mit"
 # before_uninstall = "septillion.uninstall.before_uninstall"
 # after_uninstall = "septillion.uninstall.after_uninstall"
 
+
+# Migration
+after_migrate = 'septillion.migrate.after_migrate'
+
 # Integration Setup
 # ------------------
 # To set up dependencies/integrations with other apps
