@@ -8,7 +8,7 @@ frappe.query_reports["Item Selling Price"] = {
 			"fieldtype": "Link",
 			"label": __("Item"),
 			"options": "Item"
-		}, 
+		},
 		{
 			"fieldname": "item_group",
 			"fieldtype": "Link",
@@ -25,21 +25,22 @@ frappe.query_reports["Item Selling Price"] = {
 
 	get_datatable_options(options) {
 		return Object.assign(options, {
-			dynamicRowHeight: true
+			dynamicRowHeight: true,
 		})
 	},
 
 
 	after_datatable_render: function (report) {
+
 		columnsList = frappe.query_report.datatable.datamanager.columns;
 		for (column in columnsList) {
 			if (columnsList[column]['fieldname'] == "max_discount") {
 				max_discount_col_id = column;
 			}
-			else if(columnsList[column]['fieldname'] == "item_name"){
+			else if (columnsList[column]['fieldname'] == "item_name") {
 				item_name_col_id = column
 			}
-			else if(columnsList[column]['fieldname'] == "item_code"){
+			else if (columnsList[column]['fieldname'] == "item_code") {
 				item_code_col_id = column
 			}
 			else if (columnsList[column]['fieldtype'] == "Image" || ((columnsList[column]['fieldtype'] == "HTML") && (columnsList[column]['fieldname'] == "item_image"))) {
@@ -48,35 +49,9 @@ frappe.query_reports["Item Selling Price"] = {
 			}
 		}
 
-		$(`.dt-cell--col-${max_discount_col_id}, dt-cell--${max_discount_col_id}-0`).on("change", function (event) {
-			current_col = event.currentTarget.dataset.colIndex
-			current_row = event.currentTarget.dataset.rowIndex
 
-			let cell_max_discount, cell_item_name;
-			
-			setTimeout(() => {
-				cell_item_name  = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, current_row).content
-				cell_max_discount = frappe.query_report.datatable.datamanager.getCell(max_discount_col_id, current_row).content
-				cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id,current_row).content
-				console.log(cell_item_name)
-				return frappe.call({
-					method: "septillion.septillion.report.item_selling_price.item_selling_price.change_to_max_discount",
-					args: {
-						msg: "Updating Document Value",
-						doctype: "Item",
-						document: cell_item_name,
-						document_code: cell_item_code,
-						value: cell_max_discount
-					},
-					callback: function () {
-						frappe.query_report.refresh()
-					}
-				});
 
-			}, 100);
-		});
 
-		
 		// Image Preview Logic
 
 		$(parentClassName).css({
@@ -86,7 +61,43 @@ frappe.query_reports["Item Selling Price"] = {
 
 		$(".vrow").css("overflow", "hidden")
 
+
+
 		$(document).ready(function () {
+
+			$(".report-wrapper").on('change', `.dt-cell--col-${max_discount_col_id}, dt-cell--${max_discount_col_id}-0`, function (event) {
+				current_col = event.currentTarget.dataset.colIndex
+				current_row = event.currentTarget.dataset.rowIndex
+				console.log(event);
+
+				console.log(current_col, current_row);
+
+				let cell_max_discount, cell_item_name;
+
+				
+				setTimeout(() => {
+					cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, current_row).content
+					cell_max_discount = frappe.query_report.datatable.datamanager.getCell(max_discount_col_id, current_row).content
+					cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id, current_row).content
+
+					return frappe.call({
+						method: "septillion.septillion.report.item_selling_price.item_selling_price.change_to_max_discount",
+						args: {
+							msg: "Updating Document Value",
+							doctype: "Item",
+							document: cell_item_name,
+							document_code: cell_item_code,
+							value: cell_max_discount
+						},
+						callback: function () {
+							frappe.query_report.refresh()
+						}
+					});
+
+				}, 100);
+
+			})
+
 			$(".report-wrapper").on('mouseenter', ".item-image", function (event) {
 
 				$(columnClassName).hover(
@@ -94,12 +105,12 @@ frappe.query_reports["Item Selling Price"] = {
 					function (event) {
 
 						total_rows = frappe.query_report.datatable.datamanager.rowCount,
-						curr_row = event.currentTarget.dataset.rowIndex
+							curr_row = event.currentTarget.dataset.rowIndex
 
 						$(this).css({
 							"overflow": "visible",
 							"transition": "all 0.3s",
-							"z-index": "999",
+							"z-index": "998",
 							"cursor": "pointer",
 							"position": "relative",
 						})
@@ -144,19 +155,16 @@ frappe.query_reports["Item Selling Price"] = {
 					function (event) {
 						$(columnClassName).css({
 							"transition": "all 0.3s",
-							"z-index": "1",
-							"cursor": "pointer",
+							"z-index": "0",
 							"transform": "scale(1)"
 						})
 
 						$(this).find("img").css({
-							"transform": "scale(1) translateY(0%)",
+							"transform": "scale(1) translateY(0)",
 							"transition": "all 0.3s",
-							"cursor": "pointer",
 							"position": "relative",
 							"z-index": "1",
 							"left": "0",
-							"margin": "0",
 						})
 					}
 				)

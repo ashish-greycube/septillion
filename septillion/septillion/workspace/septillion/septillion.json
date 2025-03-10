@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"owvD-zLvC8\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Septillion</span>\",\"col\":12}},{\"id\":\"uozKcvOtIX\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
+ "content": "[{\"id\":\"owvD-zLvC8\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Septillion</span>\",\"col\":12}},{\"id\":\"50Iyx3WxSj\",\"type\":\"card\",\"data\":{\"card_name\":\"Report\",\"col\":4}}]",
  "creation": "2025-03-08 19:04:09.879952",
  "custom_blocks": [],
  "docstatus": 0,
@@ -16,17 +16,6 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Item Purchase Price",
-   "link_count": 0,
-   "link_to": "Item Purchase Price",
-   "link_type": "Report",
-   "onboard": 0,
-   "report_ref_doctype": "Item",
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
    "label": "Item Selling Price",
    "link_count": 0,
    "link_to": "Item Selling Price",
@@ -38,9 +27,9 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Landed Movement",
+   "label": "Item Purchase Price",
    "link_count": 0,
-   "link_to": "Landed Movement",
+   "link_to": "Item Purchase Price",
    "link_type": "Report",
    "onboard": 0,
    "report_ref_doctype": "Item",
@@ -60,21 +49,22 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Reports",
+   "label": "Landed Movement",
+   "link_count": 0,
+   "link_to": "Landed Movement",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "Item",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Report",
    "link_count": 4,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Item Purchase Price",
-   "link_count": 0,
-   "link_to": "Item Purchase Price",
-   "link_type": "Report",
-   "onboard": 0,
-   "type": "Link"
   },
   {
    "hidden": 0,
@@ -89,9 +79,9 @@
   {
    "hidden": 0,
    "is_query_report": 1,
-   "label": "Landed Movement",
+   "label": "Item Purchase Price",
    "link_count": 0,
-   "link_to": "Landed Movement",
+   "link_to": "Item Purchase Price",
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
@@ -105,9 +95,19 @@
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Landed Movement",
+   "link_count": 0,
+   "link_to": "Landed Movement",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2025-03-08 19:17:55.183571",
+ "modified": "2025-03-10 13:58:22.301307",
  "modified_by": "Administrator",
  "module": "Septillion",
  "name": "Septillion",

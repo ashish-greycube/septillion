@@ -90,6 +90,7 @@ def get_columns(canEdit):
 			"label": _("Max Discount(%)"),
 			"precision" : 2,
 			"editable" : canEdit,
+			"focusable": True,
 			"width": 110
 		},
 		{
@@ -164,8 +165,17 @@ def get_conditions(filters):
 
 @frappe.whitelist()
 def change_to_max_discount(doctype, document, value, document_code, msg):
+
+	print("="*100)
+
 	item_id = frappe.get_all(doctype, filters = {"item_name" : document, "item_code" : document_code})
+	
 	doc = frappe.get_doc(doctype, item_id)
+
+	print(doctype, document_code, doc, document, item_id)
+
 	doc.max_discount = value
+
 	doc.save()
-	frappe.msgprint("Max Discount is Updated in {0}".format(document_code), alert=True)
+
+	frappe.msgprint("Max Discount is Updated in {0}".format(document_code), alert=True)	

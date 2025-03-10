@@ -62,6 +62,14 @@ def get_columns(canEdit):
 			"width" : 150
 		},
 		{
+			"fieldname" : "max_discount",
+			"fieldtype" : "Float",
+			"label" : _('Max Discount(%)'),
+			"precision" : 2,
+			"editable" : canEdit,
+			"width" : 120 
+		},
+		{
 			"fieldname" : "sep_qty",
 			"fieldtype" : "Float",
 			"label" : _('Stock SEP Qty'),
@@ -112,15 +120,7 @@ def get_columns(canEdit):
 			"fieldtype" : "Percentage",
 			"label" : _('Profit (%)'),
 			"width" : 100
-		},
-		{
-			"fieldname" : "max_discount",
-			"fieldtype" : "Float",
-			"label" : _('Max Discount(%)'),
-			"precision" : 2,
-			"editable" : canEdit,
-			"width" : 120 
-		},
+		}
 	]
 
 def get_items_data(filters):

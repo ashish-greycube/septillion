@@ -207,7 +207,7 @@ def get_chart(records):
 			'labels': labels,
 			'datasets' : [
 				{
-					'name': "Buy In Stock",
+					'name': "Buy In Stock(This Color Line Will Show the Changes in Buy In Stock)",
         			'values': buy_in_values,
         			'chartType': 'bar',
 				},

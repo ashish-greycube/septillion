@@ -56,7 +56,7 @@ frappe.query_reports["Item Purchase Price"] = {
 		}
 
 		// Event for handling max discount changes
-		$(`.dt-cell--col-${max_discount_col_id}, dt-cell--${max_discount_col_id}-0`).on("change", function (event) {
+		$(`.dt-cell--col-${max_discount_col_id}, dt-cell--${max_discount_col_id}-0`).on("change",  function (event) {
 			current_col = event.currentTarget.dataset.colIndex
 			current_row = event.currentTarget.dataset.rowIndex
 
@@ -66,6 +66,8 @@ frappe.query_reports["Item Purchase Price"] = {
 				cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, current_row).content
 				cell_max_discount = frappe.query_report.datatable.datamanager.getCell(max_discount_col_id, current_row).content
 				cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id,current_row).content
+
+				
 
 				return frappe.call({
 					method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_max_discount",
