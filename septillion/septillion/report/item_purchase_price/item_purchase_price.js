@@ -25,15 +25,6 @@ frappe.query_reports["Item Purchase Price"] = {
 	],
 
 	get_datatable_options(options) {
-		if (frappe.user.has_role("Purchase Manager") || (frappe.user.has_role("Purchase Manager") && frappe.user.has_role("Purchase User"))) {
-			for (column in options.columns) {
-				if (options.columns[column]['fieldname'] == "max_discount" ||
-					options.columns[column]['fieldname'] == "safety_stock_qty" ||
-					options.columns[column]['fieldname'] == "custom_landed_cost_ex_vat") {
-					options.columns[column].editable = true
-				}
-			}
-		}
 		return Object.assign(options, {
 			dynamicRowHeight: true,
 			focusable: true
@@ -59,6 +50,9 @@ frappe.query_reports["Item Purchase Price"] = {
 			else if (columnsList[column]['fieldname'] == "custom_landed_cost_ex_vat") {
 				landed_cost_col_id = column;
 			}
+			else if(columnsList[column]['fieldname'] == "item_code"){
+				item_code_col_id = column
+			}
 		}
 
 		// Event for handling max discount changes
@@ -71,7 +65,7 @@ frappe.query_reports["Item Purchase Price"] = {
 
 				cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, current_row).content
 				cell_max_discount = frappe.query_report.datatable.datamanager.getCell(max_discount_col_id, current_row).content
-
+				cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id,current_row).content
 
 				return frappe.call({
 					method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_max_discount",
@@ -79,6 +73,7 @@ frappe.query_reports["Item Purchase Price"] = {
 						msg: "Updating Document Value",
 						doctype: "Item",
 						document: cell_item_name,
+						document_code: cell_item_code,
 						value: cell_max_discount,
 					},
 					callback: function () {
@@ -99,6 +94,7 @@ frappe.query_reports["Item Purchase Price"] = {
 
 				cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, current_row).content
 				cell_safety_stock = frappe.query_report.datatable.datamanager.getCell(safety_stock_col_id, current_row).content
+				cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id,current_row).content
 
 				return frappe.call({
 					method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_safety_stock",
@@ -106,6 +102,7 @@ frappe.query_reports["Item Purchase Price"] = {
 						msg: "Updating Document Value",
 						doctype: "Item",
 						document: cell_item_name,
+						document_code: cell_item_code,
 						value: cell_safety_stock
 					},
 					callback: function () {
@@ -126,7 +123,7 @@ frappe.query_reports["Item Purchase Price"] = {
 
 				cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, current_row).content
 				cell_landed_cost = frappe.query_report.datatable.datamanager.getCell(landed_cost_col_id, current_row).content
-
+				cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id,current_row).content
 
 				return frappe.call({
 					method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_landed_cost",
@@ -134,6 +131,7 @@ frappe.query_reports["Item Purchase Price"] = {
 						msg: "Updating Document Value",
 						doctype: "Item",
 						document: cell_item_name,
+						document_code: cell_item_code,
 						value: cell_landed_cost
 					},
 					callback: function () {
@@ -154,7 +152,7 @@ frappe.query_reports["Item Purchase Price"] = {
 			}
 		}
 
-		$('.dt-cell__content--col-1').css({
+		$(parentClassName).css({
 			"overflow": "visible",
 			"z-index": "1000"
 		})

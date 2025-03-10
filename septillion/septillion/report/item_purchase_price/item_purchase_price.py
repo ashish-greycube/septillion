@@ -5,7 +5,7 @@ import frappe
 from frappe import _
 
 def execute(filters=None):
-	
+
 	roles = frappe.get_roles(frappe.session.user)
 	if "Purchase Manager" in roles:
 		canEdit = True
@@ -111,7 +111,7 @@ def get_columns(canEdit):
 			"fieldname" : "profit_percentage",
 			"fieldtype" : "Percentage",
 			"label" : _('Profit (%)'),
-			"width" : 150
+			"width" : 100
 		},
 		{
 			"fieldname" : "max_discount",
@@ -119,7 +119,7 @@ def get_columns(canEdit):
 			"label" : _('Max Discount(%)'),
 			"precision" : 2,
 			"editable" : canEdit,
-			"width" : 150 
+			"width" : 120 
 		},
 	]
 
@@ -189,25 +189,25 @@ def get_conditions(filters):
 
 
 @frappe.whitelist()
-def change_to_max_discount(doctype, document, value, msg):
-	item_id = frappe.get_all(doctype, filters = {"item_name" : document})
+def change_to_max_discount(doctype, document, value, document_code, msg):
+	item_id = frappe.get_all(doctype, filters = {"item_name" : document, "item_code" : document_code})
 	doc = frappe.get_doc(doctype, item_id)
 	doc.max_discount = value
 	doc.save()
+	frappe.msgprint("Max Discount is Updated in {0}".format(document_code), alert=True)
 
 @frappe.whitelist()
-def change_to_safety_stock(doctype, document, value, msg):
-	item_id = frappe.get_all(doctype, filters = {"item_name" : document})
+def change_to_safety_stock(doctype, document, value, document_code, msg):
+	item_id = frappe.get_all(doctype, filters = {"item_name" : document, "item_code" : document_code})
 	doc = frappe.get_doc(doctype, item_id)
 	doc.safety_stock = value
 	doc.save()
-	
+	frappe.msgprint("Safety Stock is Updated in {0}".format(document_code), alert=True)
 
 @frappe.whitelist()
-def change_to_landed_cost(doctype, document, value, msg):
-	item_id = frappe.get_all(doctype, filters = {"item_name" : document})
+def change_to_landed_cost(doctype, document, value, document_code,  msg):
+	item_id = frappe.get_all(doctype, filters = {"item_name" : document, "item_code" : document_code})
 	doc = frappe.get_doc(doctype, item_id)
 	doc.custom_landed_cost = value
 	doc.save()
-
-
+	frappe.msgprint("Landed Cost is Updated in {0}".format(document_code), alert=True)

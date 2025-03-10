@@ -13,12 +13,7 @@ frappe.query_reports["Landed Movement"] = {
 	],
 
 	get_datatable_options(options) {
-		for (column in options.columns) {
-			if (options.columns[column]['fieldname'] == "safety_stock_qty") {
-				options.columns[column]['editable'] = true
-			}
-		}
-
+		
 		return Object.assign(options, {
 			dynamicRowHeight: true
 		});
@@ -35,6 +30,7 @@ frappe.query_reports["Landed Movement"] = {
 		$(`.dt-cell--col-${safety_stock_col_id}, dt-cell--${safety_stock_col_id}-0`).on("change", function (event) {
 			current_col = event.currentTarget.dataset.colIndex
 			current_row = event.currentTarget.dataset.rowIndex
+			
 
 			let cell_safety_stock;
 			

@@ -52,31 +52,31 @@ def get_columns():
 			"fieldname" : "currency",
 			"fieldtype" : "Data",
 			"label" : _("Currency"),
-			"width" : 150
+			"width" : 100
 		},
 		{
 			"fieldname" : "buy_price",
 			"fieldtype" : "Currency",
 			"label" : _("Buying Price"),
-			"width" : 150
+			"width" : 120
 		},
 		{
 			"fieldname" : "exc_rate",
 			"fieldtype" : "Float",
 			"label" : _("Exchange Rate"),
-			"width" : 150
+			"width" : 120
 		},
 		{
 			"fieldname" : "landed_cost",
 			"fieldtype" : "Float",
 			"label" : _("Landed Cost"),
-			"width" : 150
+			"width" : 120
 		},
 		{
 			"fieldname" : "ship_vs_buy_price",
 			"fieldtype" : "Percentage",
 			"label" : _("Shipment Cost VS Buying Price"),
-			"width" : 150
+			"width" : 120
 		},
 	]
 

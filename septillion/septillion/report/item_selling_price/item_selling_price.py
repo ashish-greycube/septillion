@@ -47,8 +47,9 @@ def get_columns(canEdit):
 		},
 		{
 			"fieldname": "item_code",
-			"fieldtype": "Data",
+			"fieldtype": "Link",
 			"label": _("Item Code"),
+			"options": "Item",
 			"width": 200
 		},
 		{
@@ -89,7 +90,7 @@ def get_columns(canEdit):
 			"label": _("Max Discount(%)"),
 			"precision" : 2,
 			"editable" : canEdit,
-			"width": 130
+			"width": 110
 		},
 		{
 			"fieldname": "exc_vat_discount_price",
@@ -167,3 +168,4 @@ def change_to_max_discount(doctype, document, value, document_code, msg):
 	doc = frappe.get_doc(doctype, item_id)
 	doc.max_discount = value
 	doc.save()
+	frappe.msgprint("Max Discount is Updated in {0}".format(document_code), alert=True)

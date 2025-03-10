@@ -24,14 +24,6 @@ frappe.query_reports["Item Selling Price"] = {
 	],
 
 	get_datatable_options(options) {
-		if (frappe.user.has_role("Sales Manager") || (frappe.user.has_role("Sales Manager") && frappe.user.has_role("Sales User"))){
-			for (column in options.columns){
-				if (options.columns[column]['fieldname'] == "max_discount"){
-					options.columns[column].editable = true
-				} 
-			}
-		}
-
 		return Object.assign(options, {
 			dynamicRowHeight: true
 		})
@@ -87,7 +79,7 @@ frappe.query_reports["Item Selling Price"] = {
 		
 		// Image Preview Logic
 
-		$('.dt-cell__content--col-1').css({
+		$(parentClassName).css({
 			"overflow": "visible",
 			"z-index": "1000"
 		})

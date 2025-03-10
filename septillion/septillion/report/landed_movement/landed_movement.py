@@ -8,11 +8,18 @@ from frappe.utils import add_to_date
 
 
 def execute(filters=None):
+
+	roles = frappe.get_roles(frappe.session.user)
+	if "Purchase Manager" in roles:
+		canEdit = True
+	else:
+		canEdit = False
+
 	if not filters : filters = {}
 
 	columns, data = [], []
 
-	columns = get_columns()
+	columns = get_columns(canEdit)
 	records = get_records(filters)
 
 	if not records:
@@ -35,42 +42,42 @@ def execute(filters=None):
 	return columns, data, None, chart
 
 
-def get_columns():
+def get_columns(canEdit):
 	return [
 		{
 			"fieldname": "months",
 			"fieldtype": "Data",
 			"label" : _("Months"),
-			"width" : 150
+			"width" : 130
 		},
 		{
 			"fieldname" : "buy_in",
 			"fieldtype" : "Float",
 			"label" : _("Buy In(Stock Received)"),
 			"precision" : 2,
-			"width" : 180,
+			"width" : 130,
 		},
 		{
 			"fieldname" : "sell_out",
 			"fieldtype" : "Float",
 			"label" : _("Sell Out(Delivery Note)"),
 			"precision" : 2,
-			"width" : 180,
+			"width" : 130,
 		},
 		{
 			"fieldname" : "end_of_month_stock",
 			"fieldtype" : "Float",
 			"label" : _("End of Month Stock"),
 			"precision" : 2,
-			"width" : 180,
+			"width" : 130,
 		},
 		{
 			"fieldname" : "safety_stock_qty",
 			"fieldtype" : "Float",
 			"label" : _("Safety Stock Qty"),
-			"editable" : True,
+			"editable" : canEdit,
 			"precision" : 2,
-			"width" : 180,
+			"width" : 130,
 		},
 	]
 
@@ -226,8 +233,9 @@ def get_chart(records):
 	return chart
 
 @frappe.whitelist()
-def change_to_safety_stock(doctype, document, value, msg):
-	item_id = frappe.get_all(doctype, filters = {"name" : document})
+def change_to_safety_stock(doctype, document, value,  msg):
+	item_id = frappe.get_all(doctype, filters = {"item_code" : document})
 	doc = frappe.get_doc(doctype, item_id)
 	doc.safety_stock = value
 	doc.save()
+	frappe.msgprint("Safety Stock is Updated in {0}".format(document), alert=True)
