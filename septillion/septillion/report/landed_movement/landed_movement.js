@@ -13,7 +13,6 @@ frappe.query_reports["Landed Movement"] = {
 	],
 
 	get_datatable_options(options) {
-		
 		return Object.assign(options, {
 			dynamicRowHeight: true
 		});
@@ -27,30 +26,30 @@ frappe.query_reports["Landed Movement"] = {
 			}
 		}
 
-		$(`.dt-cell--col-${safety_stock_col_id}, dt-cell--${safety_stock_col_id}-0`).on("change", function (event) {
-			current_col = event.currentTarget.dataset.colIndex
-			current_row = event.currentTarget.dataset.rowIndex
-			
+		for (let row = 0; row <= frappe.query_report.datatable.datamanager.rowCount; row++) {
+			$(".report-wrapper").off('change', `.dt-cell--col-${safety_stock_col_id}, dt-cell--${safety_stock_col_id}-${row}`);
+			$(".report-wrapper").on('change', `.dt-cell--col-${safety_stock_col_id}, dt-cell--${safety_stock_col_id}-${row}`, function (event) {
 
-			let cell_safety_stock;
-			
-			setTimeout(() => {
-				cell_safety_stock = frappe.query_report.datatable.datamanager.getCell(safety_stock_col_id, current_row).content
-				
-				return frappe.call({
-					method: "septillion.septillion.report.landed_movement.landed_movement.change_to_safety_stock",
-					args: {
-						msg: "Updating Document Value",
-						doctype: "Item",
-						document: frappe.query_report.filters[0].value,
-						value: cell_safety_stock
-					},
-					callback: function () {
-						frappe.query_report.refresh()
+				setTimeout(() => {
+
+					if (event.currentTarget.dataset.rowIndex == row) {
+						cell_safety_stock = frappe.query_report.datatable.datamanager.getCell(safety_stock_col_id, row).content
+
+						return frappe.call({
+							method: "septillion.septillion.report.landed_movement.landed_movement.change_to_safety_stock",
+							args: {
+								msg: "Updating Document Value",
+								doctype: "Item",
+								document: frappe.query_report.filters[0].value,
+								value: cell_safety_stock
+							},
+							callback: function () {
+								frappe.query_report.refresh()
+							}
+						});
 					}
-				});
-
-			}, 100);
-		});
+				}, 100);
+			})
+		}
 	}
 };

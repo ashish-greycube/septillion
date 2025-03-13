@@ -34,7 +34,6 @@ frappe.query_reports["Item Purchase Price"] = {
 
 	after_datatable_render: function (report) {
 
-		// Max Discount Logic
 		columnsList = frappe.query_report.datatable.datamanager.columns;
 
 		for (column in columnsList) {
@@ -50,109 +49,15 @@ frappe.query_reports["Item Purchase Price"] = {
 			else if (columnsList[column]['fieldname'] == "custom_landed_cost_ex_vat") {
 				landed_cost_col_id = column;
 			}
-			else if(columnsList[column]['fieldname'] == "item_code"){
+			else if (columnsList[column]['fieldname'] == "item_code") {
 				item_code_col_id = column
 			}
-		}
-
-		// Event for handling max discount changes
-		$(`.dt-cell--col-${max_discount_col_id}, dt-cell--${max_discount_col_id}-0`).on("change",  function (event) {
-			current_col = event.currentTarget.dataset.colIndex
-			current_row = event.currentTarget.dataset.rowIndex
-
-			let cell_item_name, cell_max_discount;
-			setTimeout(() => {
-
-				cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, current_row).content
-				cell_max_discount = frappe.query_report.datatable.datamanager.getCell(max_discount_col_id, current_row).content
-				cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id,current_row).content
-
-				
-
-				return frappe.call({
-					method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_max_discount",
-					args: {
-						msg: "Updating Document Value",
-						doctype: "Item",
-						document: cell_item_name,
-						document_code: cell_item_code,
-						value: cell_max_discount,
-					},
-					callback: function () {
-						frappe.query_report.refresh()
-					}
-				});
-
-			}, 100);
-		});
-
-		// Event for handling safety stock changes
-		$(`.dt-cell--col-${safety_stock_col_id}, dt-cell--${safety_stock_col_id}-0`).on("change", function (event) {
-			current_col = event.currentTarget.dataset.colIndex
-			current_row = event.currentTarget.dataset.rowIndex
-
-			let cell_item_name, cell_safety_stock;
-			setTimeout(() => {
-
-				cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, current_row).content
-				cell_safety_stock = frappe.query_report.datatable.datamanager.getCell(safety_stock_col_id, current_row).content
-				cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id,current_row).content
-
-				return frappe.call({
-					method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_safety_stock",
-					args: {
-						msg: "Updating Document Value",
-						doctype: "Item",
-						document: cell_item_name,
-						document_code: cell_item_code,
-						value: cell_safety_stock
-					},
-					callback: function () {
-						frappe.query_report.refresh()
-					}
-				});
-
-			}, 100);
-		});
-
-		// Event for handling landed cost changes
-		$(`.dt-cell--col-${landed_cost_col_id}, dt-cell--${landed_cost_col_id}-0`).on("change", function (event) {
-			current_col = event.currentTarget.dataset.colIndex
-			current_row = event.currentTarget.dataset.rowIndex
-
-			let cell_item_name, cell_landed_cost;
-			setTimeout(() => {
-
-				cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, current_row).content
-				cell_landed_cost = frappe.query_report.datatable.datamanager.getCell(landed_cost_col_id, current_row).content
-				cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id,current_row).content
-
-				return frappe.call({
-					method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_landed_cost",
-					args: {
-						msg: "Updating Document Value",
-						doctype: "Item",
-						document: cell_item_name,
-						document_code: cell_item_code,
-						value: cell_landed_cost
-					},
-					callback: function () {
-						frappe.query_report.refresh()
-					}
-				});
-
-			}, 100);
-		});
-
-		// Image Preview Logic
-
-		// Dynamically Fetching Image Column Index 
-		for (column in columnsList) {
-			if (columnsList[column]['fieldtype'] == "Image" || ((columnsList[column]['fieldtype'] == "HTML") && (columnsList[column]['fieldname'] == "item_image"))) {
+			else if (columnsList[column]['fieldtype'] == "Image" || ((columnsList[column]['fieldtype'] == "HTML") && (columnsList[column]['fieldname'] == "item_image"))) {
 				parentClassName = `.dt-cell__content--col-${column}`;
 				columnClassName = `.dt-cell--col-${column}, dt-cell--${column}-0`;
 			}
 		}
+
 
 		$(parentClassName).css({
 			"overflow": "visible",
@@ -163,6 +68,103 @@ frappe.query_reports["Item Purchase Price"] = {
 
 
 		$(document).ready(function () {
+
+			// Max-discount field logic for updating the value in Item Doctype
+			for (let row = 0; row <= frappe.query_report.datatable.datamanager.rowCount; row++) {
+				$(".report-wrapper").off('change', `.dt-cell--col-${max_discount_col_id}, dt-cell--${max_discount_col_id}-${row}`);
+				$(".report-wrapper").on('change', `.dt-cell--col-${max_discount_col_id}, dt-cell--${max_discount_col_id}-${row}`, function (event) {
+
+					setTimeout(() => {
+						if (event.currentTarget.dataset.rowIndex == row) {
+
+							cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, row).content
+							cell_max_discount = frappe.query_report.datatable.datamanager.getCell(max_discount_col_id, row).content
+							cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id, row).content
+
+							return frappe.call({
+								method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_max_discount",
+								args: {
+									msg: "Updating Document Value",
+									doctype: "Item",
+									document: cell_item_name,
+									document_code: cell_item_code,
+									value: cell_max_discount,
+								},
+								callback: function () {
+									frappe.query_report.refresh()
+								}
+							});
+						}
+					}, 100);
+				})
+			}
+
+
+			// SafetyStock field logic for updating the value in Item Doctype
+			for (let row = 0; row <= frappe.query_report.datatable.datamanager.rowCount; row++) {
+				$(".report-wrapper").off('change', `.dt-cell--col-${safety_stock_col_id}, dt-cell--${safety_stock_col_id}-${row}`);
+				$(".report-wrapper").on('change', `.dt-cell--col-${safety_stock_col_id}, dt-cell--${safety_stock_col_id}-${row}`, function (event) {
+
+					setTimeout(() => {
+
+						if (event.currentTarget.dataset.rowIndex == row) {
+
+							cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, row).content
+							cell_safety_stock = frappe.query_report.datatable.datamanager.getCell(safety_stock_col_id, row).content
+							cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id, row).content
+
+							return frappe.call({
+								method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_safety_stock",
+								args: {
+									msg: "Updating Document Value",
+									doctype: "Item",
+									document: cell_item_name,
+									document_code: cell_item_code,
+									value: cell_safety_stock
+								},
+								callback: function () {
+									frappe.query_report.refresh()
+								}
+							});
+						}
+
+					}, 100);
+				})
+			}
+
+			// LandedCost field logic for updating the value in Item Doctype
+			for (let row = 0; row <= frappe.query_report.datatable.datamanager.rowCount; row++) {
+				$(".report-wrapper").off('change', `.dt-cell--col-${landed_cost_col_id}, dt-cell--${landed_cost_col_id}-${row}`);
+				$(".report-wrapper").on('change', `.dt-cell--col-${landed_cost_col_id}, dt-cell--${landed_cost_col_id}-${row}`, function (event) {
+
+					setTimeout(() => {
+
+						if (event.currentTarget.dataset.rowIndex == row) {
+
+							cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, row).content
+							cell_landed_cost = frappe.query_report.datatable.datamanager.getCell(landed_cost_col_id, row).content
+							cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id, row).content
+
+							return frappe.call({
+								method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_landed_cost",
+								args: {
+									msg: "Updating Document Value",
+									doctype: "Item",
+									document: cell_item_name,
+									document_code: cell_item_code,
+									value: cell_landed_cost
+								},
+								callback: function () {
+									frappe.query_report.refresh()
+								}
+							});
+						}
+
+					}, 100);
+				})
+			}
+
+			// Item Image field logic for zoom image on hover
 			$(".report-wrapper").on('mouseenter', ".item-image", function (event) {
 
 				$(columnClassName).hover(
@@ -179,38 +181,60 @@ frappe.query_reports["Item Purchase Price"] = {
 							"cursor": "pointer",
 							"position": "relative",
 						})
-
-						if (curr_row < 6) {
+						if (total_rows == 1) {
 							$(this).find("img").css({
-								"transform": "scale(3) translateY(50%)",
+								"transform": "scale(1.7) translateY(-25%)",
 								"transition": "all 0.3s",
 								"cursor": "pointer",
 								"position": "absolute",
 								"z-index": "1000",
-								"left": "50px",
+								"left": "80px",
 								"margin": "0",
+								"background-color": "white"
+							})
+
+							$(".dt-scrollable").css({
+								"overflow" : "visible"
+							})
+
+							$(".datatable").css({
+								"overflow" : "visible"
 							})
 						}
-						else if (curr_row > total_rows - 8) {
+						else if (curr_row < 6) {
 							$(this).find("img").css({
-								"transform": "scale(3) translateY(-75%)",
+								"transform": "scale(2) translateY(50%)",
 								"transition": "all 0.3s",
 								"cursor": "pointer",
 								"position": "absolute",
 								"z-index": "1000",
-								"left": "50px",
+								"left": "80px",
 								"margin": "0",
+								"background-color": "white"
+							})
+						}
+						else if (curr_row > total_rows - 12) {
+							$(this).find("img").css({
+								"transform": "scale(2) translateY(-75%)",
+								"transition": "all 0.3s",
+								"cursor": "pointer",
+								"position": "absolute",
+								"z-index": "1000",
+								"left": "80px",
+								"margin": "0",
+								"background-color": "white"
 							})
 						}
 						else {
 							$(this).find("img").css({
-								"transform": "scale(3)",
+								"transform": "scale(2) translateY(35%)",
 								"transition": "all 0.3s",
 								"cursor": "pointer",
 								"position": "absolute",
 								"z-index": "1000",
-								"left": "50px",
+								"left": "80px",
 								"margin": "0",
+								"background-color": "white"
 							})
 						}
 
@@ -234,9 +258,17 @@ frappe.query_reports["Item Purchase Price"] = {
 							"left": "0",
 							"margin": "0",
 						})
+
+						if (total_rows == 1) {
+							$(this).closest(".vrow").css("overflow", "hidden")
+							$(".dt-scrollable").css({
+								"overflow" : "hidden"
+							})
+						}	
 					}
 				)
 			})
+
 		});
 	}
 };

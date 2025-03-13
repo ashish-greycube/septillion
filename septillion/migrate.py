@@ -18,7 +18,7 @@ def after_migrate():
 
 
 
-    print("Add Expense Account For Cleaning custom table in Company and Washing Priority custom field in SI,SO.....")
+    print("Adding Landed Cost custom field in Item.....")
     for dt, fields in custom_fields.items():
         print("*******\n %s: " % dt, [d.get("fieldname") for d in fields])
     create_custom_fields(custom_fields)

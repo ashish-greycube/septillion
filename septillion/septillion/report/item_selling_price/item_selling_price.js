@@ -2,6 +2,7 @@
 // For license information, please see license.txt
 
 frappe.query_reports["Item Selling Price"] = {
+
 	"filters": [
 		{
 			"fieldname": "name",
@@ -49,54 +50,46 @@ frappe.query_reports["Item Selling Price"] = {
 			}
 		}
 
-
-
-
-		// Image Preview Logic
-
-		$(parentClassName).css({
-			"overflow": "visible",
-			"z-index": "1000"
-		})
-
-		$(".vrow").css("overflow", "hidden")
-
-
-
 		$(document).ready(function () {
 
-			$(".report-wrapper").on('change', `.dt-cell--col-${max_discount_col_id}, dt-cell--${max_discount_col_id}-0`, function (event) {
-				current_col = event.currentTarget.dataset.colIndex
-				current_row = event.currentTarget.dataset.rowIndex
-				console.log(event);
+			// Max-discount field logic for updating value in Item Doctype
+			for (let row = 0; row <= frappe.query_report.datatable.datamanager.rowCount; row++) {
+				$(".report-wrapper").off('change', `.dt-cell--col-${max_discount_col_id}, dt-cell--${max_discount_col_id}-${row}`);
+				$(".report-wrapper").on('change', `.dt-cell--col-${max_discount_col_id}, dt-cell--${max_discount_col_id}-${row}`, function (event) {
 
-				console.log(current_col, current_row);
+					setTimeout(() => {
+						if (event.currentTarget.dataset.rowIndex == row) {
 
-				let cell_max_discount, cell_item_name;
+							cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, row).content
+							cell_max_discount = frappe.query_report.datatable.datamanager.getCell(max_discount_col_id, row).content
+							cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id, row).content
 
-				
-				setTimeout(() => {
-					cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, current_row).content
-					cell_max_discount = frappe.query_report.datatable.datamanager.getCell(max_discount_col_id, current_row).content
-					cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id, current_row).content
-
-					return frappe.call({
-						method: "septillion.septillion.report.item_selling_price.item_selling_price.change_to_max_discount",
-						args: {
-							msg: "Updating Document Value",
-							doctype: "Item",
-							document: cell_item_name,
-							document_code: cell_item_code,
-							value: cell_max_discount
-						},
-						callback: function () {
-							frappe.query_report.refresh()
+							return frappe.call({
+								method: "septillion.septillion.report.item_selling_price.item_selling_price.change_to_max_discount",
+								args: {
+									msg: "Updating Document Value",
+									doctype: "Item",
+									document: cell_item_name,
+									document_code: cell_item_code,
+									value: cell_max_discount,
+								},
+								callback: function () {
+									frappe.query_report.refresh()
+								}
+							});
 						}
-					});
+					}, 100);
+				})
+			}
 
-				}, 100);
+			// Item Image field logic for Zoom Image on Hovering
 
+			$(parentClassName).css({
+				"overflow": "visible",
+				"z-index": "1000",
 			})
+
+			$(".vrow").css("overflow", "hidden")
 
 			$(".report-wrapper").on('mouseenter', ".item-image", function (event) {
 
@@ -105,47 +98,70 @@ frappe.query_reports["Item Selling Price"] = {
 					function (event) {
 
 						total_rows = frappe.query_report.datatable.datamanager.rowCount,
-							curr_row = event.currentTarget.dataset.rowIndex
+						curr_row = event.currentTarget.dataset.rowIndex
 
 						$(this).css({
 							"overflow": "visible",
 							"transition": "all 0.3s",
-							"z-index": "998",
+							"z-index": "999",
 							"cursor": "pointer",
 							"position": "relative",
 						})
 
-						if (curr_row < 6) {
+						if (total_rows == 1) {
 							$(this).find("img").css({
-								"transform": "scale(3) translateY(50%)",
+								"transform": "scale(1.6) translateY(-25%)",
 								"transition": "all 0.3s",
 								"cursor": "pointer",
 								"position": "absolute",
 								"z-index": "1000",
-								"left": "50px",
+								"left": "80px",
 								"margin": "0",
+								"background-color": "white"
+							})
+
+							$(".dt-scrollable").css({
+								"overflow" : "visible"
+							})
+
+							$(".datatable").css({
+								"overflow" : "visible"
 							})
 						}
-						else if (curr_row > total_rows - 8) {
+						else if (curr_row < 6) {
 							$(this).find("img").css({
-								"transform": "scale(3) translateY(-75%)",
+								"transform": "scale(2) translateY(55%)",
 								"transition": "all 0.3s",
 								"cursor": "pointer",
 								"position": "absolute",
 								"z-index": "1000",
-								"left": "50px",
+								"left": "80px",
 								"margin": "0",
+								"background-color": "white"
+							})
+						}
+						else if (curr_row > total_rows - 12) {
+							$(this).find("img").css({
+								"transform": "scale(2) translateY(-75%)",
+								"transition": "all 0.3s",
+								"cursor": "pointer",
+								"position": "absolute",
+								"z-index": "1000",
+								"left": "80px",
+								"margin": "0",
+								"background-color": "white"
 							})
 						}
 						else {
 							$(this).find("img").css({
-								"transform": "scale(3)",
+								"transform": "scale(2) translateY(35%)",
 								"transition": "all 0.3s",
 								"cursor": "pointer",
 								"position": "absolute",
 								"z-index": "1000",
-								"left": "50px",
+								"left": "80px",
 								"margin": "0",
+								"background-color": "white"
 							})
 						}
 
@@ -155,17 +171,26 @@ frappe.query_reports["Item Selling Price"] = {
 					function (event) {
 						$(columnClassName).css({
 							"transition": "all 0.3s",
-							"z-index": "0",
+							"z-index": "1",
+							"position": "relative",
 							"transform": "scale(1)"
 						})
 
 						$(this).find("img").css({
-							"transform": "scale(1) translateY(0)",
+							"overflow" : "hidden",
+							"transform": "scale(1)",
 							"transition": "all 0.3s",
 							"position": "relative",
-							"z-index": "1",
+							"z-index": "-1",
 							"left": "0",
 						})
+
+						if (total_rows == 1) {
+							$(this).closest(".vrow").css("overflow", "hidden")
+							$(".dt-scrollable").css({
+								"overflow" : "hidden"
+							})
+						}	
 					}
 				)
 			})

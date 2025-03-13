@@ -21,7 +21,7 @@ def execute(filters=None):
 
 	for items in items_data:
 		row  = frappe._dict({
-			"item_image" : '<img src ={0} width = "100" height="50" alt = {1} class="item-image">'.format(items.image, items.item_name),
+			"item_image" : '<img src ={0} width = "100" height="100" alt = {1} class="item-image">'.format(items.image, items.item_name),
 			"item_code": items.item_code,
 			"item_name": items.item_name,
 			"sep_qty" : items.stock_sep_qty,
@@ -35,8 +35,6 @@ def execute(filters=None):
 			"max_discount" : items.max_discount,
 		})
 		data.append(row)
-
-		
 
 	return columns, data
 
@@ -190,6 +188,7 @@ def get_conditions(filters):
 
 @frappe.whitelist()
 def change_to_max_discount(doctype, document, value, document_code, msg):
+	print("+"*150)
 	item_id = frappe.get_all(doctype, filters = {"item_name" : document, "item_code" : document_code})
 	doc = frappe.get_doc(doctype, item_id)
 	doc.max_discount = value

@@ -4,7 +4,7 @@
 import frappe
 from frappe import _
 from datetime import datetime
-from frappe.utils import add_to_date
+from frappe.utils import add_to_date, month_diff
 
 
 def execute(filters=None):
@@ -89,100 +89,168 @@ def get_conditions(filters):
 			conditions[key] = value
 	return conditions
 
-
 def get_records(filters):
 	conditions = get_conditions(filters)
+
 	data = []
-	for i in range(24):
-		formattedMonth = add_to_date(datetime.now(), months = -i).strftime("%b-%Y")
-		month = add_to_date(datetime.now(), months = -i).strftime("%m")
-		year = add_to_date(datetime.now(), months = -i).strftime("%Y")
+	current_item = conditions.get('name')
 
-		stockIn_qty = frappe.db.sql("""
-								SELECT IFNULL (SUM(tsle.actual_qty), 0) as 'In Qty'
-								FROM `tabStock Ledger Entry` tsle 
-								WHERE tsle.item_code = '{0}'
-								AND tsle.warehouse = 'Stocks - SEP'
-								AND tsle.actual_qty > 0
-								AND tsle.is_cancelled = 0
-								AND tsle.posting_date BETWEEN '{1}-{2}-01' AND '{1}-{2}-31';
-							""".format(conditions.get('name'), year, month),
-							as_dict = 1)
-		
+	# First Entry of That Item in Warehouse
+	item_creation = frappe.db.sql("""
+				SELECT DATE_FORMAT(tsle.creation, '%Y-%m') as 'creation_date'
+				FROM `tabStock Ledger Entry` as tsle 
+				WHERE tsle.item_code = '{0}'
+				AND tsle.warehouse = 'Stocks - SEP'
+				ORDER BY tsle.creation ASC
+				LIMIT 1;		
+	""".format(current_item), as_dict = 1)
 
-		stockOut_qty = frappe.db.sql("""
-								SELECT IFNULL(SUM(tsle.actual_qty), 0) AS 'Out Qty'
-								FROM `tabStock Ledger Entry` tsle 
-								WHERE tsle.item_code = '{0}'
-								AND tsle.warehouse = 'Stocks - SEP'
-								AND tsle.actual_qty < 0
-								AND tsle.is_cancelled = 0
-								AND tsle.posting_date BETWEEN '{1}-{2}-01' AND '{1}-{2}-31';
-							""".format(conditions.get('name'), year, month),
-							as_dict = 1)
-		
+	# Report Last Date (Before 24 Months From Now)
+	reportLastDate = add_to_date(datetime.now(), months = -23).strftime('%Y-%m') 
 
-		endBalance_qty = frappe.db.sql("""
-								SELECT tsle.qty_after_transaction AS 'Balance Qty'
-								FROM `tabStock Ledger Entry` tsle 
-								WHERE tsle.item_code = '{0}'
-								AND tsle.warehouse = 'Stocks - SEP'
-								AND tsle.is_cancelled = 0 
-								AND tsle.posting_date BETWEEN '{1}-{2}-01' AND '{1}-{2}-31'
-								ORDER BY tsle.posting_datetime   DESC 
-								LIMIT 1;
-							""".format(conditions.get('name'), year, month),
-							as_dict = 1)
-		
+	# Main Logic - If Item is Created Before Report Last Date
+	if item_creation[0]['creation_date'] < reportLastDate:
+		bal_qty = 0.0
+		prev_bal_qty = 0.0
 
-		if len(endBalance_qty) == 0:
-			
-			tempMonth = month
-			tempYear = year
-			
-			while len(endBalance_qty) != 1 :
+		month_difference = month_diff(reportLastDate, item_creation[0]['creation_date'])
+
+		for i in range(month_difference - 1):
+			cur_year = add_to_date(datetime.strptime("{0}-01".format(item_creation[0]['creation_date']), "%Y-%m-%d"), months = i).strftime("%Y")
+			cur_month = add_to_date(datetime.strptime("{0}-01".format(item_creation[0]['creation_date']), "%Y-%m-%d"), months = i).strftime("%m")
 				
-				prevMonth = add_to_date(datetime.strptime("{0}-{1}-01".format(tempYear, tempMonth), "%Y-%m-%d") , months = -1).strftime("%m")
-				prevYear = add_to_date(datetime.strptime("{0}-{1}-01".format(tempYear, tempMonth), "%Y-%m-%d") , months = -1).strftime("%Y")
+			item_entries = frappe.db.sql("""
+						SELECT tsle.actual_qty
+						FROM `tabStock Ledger Entry` as tsle
+						WHERE tsle.item_code = '{2}'
+						AND tsle.warehouse = 'Stocks - SEP'
+						AND tsle.is_cancelled = 0
+						AND tsle.posting_date BETWEEN '{0}/{1}/01' AND '{0}/{1}/31'
+						ORDER BY tsle.posting_datetime;
+			""".format(cur_year, cur_month, current_item), as_dict = 1)
+
+			# Calculatig item in and out qty of that month
+			in_qty = 0.0
+			out_qty = 0.0
+			for entry in item_entries:
+				if entry['actual_qty'] > 0:
+					in_qty += entry['actual_qty']
+				else:
+					out_qty += entry['actual_qty']
+			
+			# Calculating Balance Qty of That Month
+			bal_qty = (prev_bal_qty + in_qty) + out_qty
+
+			# Setting Previous Balance Qty For Further Use
+			prev_bal_qty = bal_qty
+
+		for i in range(23, -1, -1):
+			cur_month = add_to_date(datetime.now(), months = -i).strftime("%m")
+			cur_year = add_to_date(datetime.now(), months = -i).strftime("%Y")
+			cur_frm_date = add_to_date(datetime.now(), months = -i).strftime("%Y-%m")
+			formattedMonth = add_to_date(datetime.now(), months = -i).strftime("%b-%Y")
+
+			# Fetching Item Data for Specific Month
+			item_entries = frappe.db.sql("""
+						SELECT tsle.actual_qty
+						FROM `tabStock Ledger Entry` as tsle
+						WHERE tsle.item_code = '{2}'
+						AND tsle.warehouse = 'Stocks - SEP'
+						AND tsle.is_cancelled = 0
+						AND tsle.posting_date BETWEEN '{0}/{1}/01' AND '{0}/{1}/31'
+						ORDER BY tsle.posting_datetime;
+			""".format(cur_year, cur_month, current_item), as_dict = 1)
+
+			# Calculatig item in and out qty of that month
+			in_qty = 0.0
+			out_qty = 0.0
+			for entry in item_entries:
+				if entry['actual_qty'] > 0:
+					in_qty += entry['actual_qty']
+				else:
+					out_qty += entry['actual_qty']
+			
+			# Calculating Balance Qty of That Month
+			bal_qty = (prev_bal_qty + in_qty) + out_qty
+
+			# Setting Previous Balance Qty For Further Use
+			prev_bal_qty = bal_qty
+
+			row_data = ({
+				"month" : formattedMonth,
+				"inQty" : in_qty,
+				"outQty" : out_qty - (2 * out_qty),
+				"endQty" : bal_qty,
+				"safetyStock" : frappe.db.get_value(
+					doctype = "Item",
+					filters = {'item_code': current_item},
+					fieldname = ['safety_stock'])
+			})
+		
+			data.append(row_data)
+
+		data = data[::-1]
+
+	# If Item is Created After Report Last Date
+	elif item_creation[0]['creation_date'] >= reportLastDate:
+		print("Adding the 0 till both date are same")
+
+		bal_qty = 0.0
+		prev_bal_qty = 0.0
+		
+		for i in range(23, -1, -1):
+			cur_month = add_to_date(datetime.now(), months = -i).strftime("%m")
+			cur_year = add_to_date(datetime.now(), months = -i).strftime("%Y")
+			cur_frm_date = add_to_date(datetime.now(), months = -i).strftime("%Y-%m")
+			formattedMonth = add_to_date(datetime.now(), months = -i).strftime("%b-%Y")
+			
+			if cur_frm_date >= reportLastDate:
+				# Fetching Item Data for Specific Month
+				item_entries = frappe.db.sql("""
+							SELECT tsle.actual_qty
+							FROM `tabStock Ledger Entry` as tsle
+							WHERE tsle.item_code = '{2}'
+							AND tsle.warehouse = 'Stocks - SEP'
+							AND tsle.is_cancelled = 0
+							AND tsle.posting_date BETWEEN '{0}/{1}/01' AND '{0}/{1}/31'
+							ORDER BY tsle.posting_datetime;
+				""".format(cur_year, cur_month, current_item), as_dict = 1)
+
+				# Calculatig item in and out qty of that month
+				in_qty = 0.0
+				out_qty = 0.0
+				for entry in item_entries:
+					if entry['actual_qty'] > 0:
+						in_qty += entry['actual_qty']
+					else:
+						out_qty += entry['actual_qty']
 				
-				if (prevYear == add_to_date(datetime.now(), months = -48).strftime("%Y")) and (prevMonth == add_to_date(datetime.now(), months = -24).strftime("%m")):
-					endBalance_qty = 0
-					break
-					
-				newEndBalance_qty = frappe.db.sql("""
-								SELECT tsle.qty_after_transaction AS 'Balance Qty'
-								FROM `tabStock Ledger Entry` tsle 
-								WHERE tsle.item_code = '{0}'
-								AND tsle.warehouse = 'Stocks - SEP'
-								AND tsle.is_cancelled = 0 
-								AND tsle.posting_date BETWEEN '{1}-{2}-01' AND '{1}-{2}-31'
-								ORDER BY tsle.posting_datetime DESC 
-								LIMIT 1;
-							""".format(conditions.get('name'), prevYear, prevMonth),
-							as_dict = 1)
+				# Calculating Balance Qty of That Month
+				bal_qty = (prev_bal_qty + in_qty) + out_qty
 
-				endBalance_qty = newEndBalance_qty
+				# Setting Previous Balance Qty For Further Use
+				prev_bal_qty = bal_qty
+			else:
+				in_qty = 0.0
+				out_qty = 0.0
+				bal_qty = 0.0
+				prev_bal_qty = 0.0
 
-				tempMonth = prevMonth 
-				tempYear = prevYear
+			row_data = ({
+				"month" : formattedMonth,
+				"inQty" : in_qty,
+				"outQty" : out_qty - (2 * out_qty),
+				"endQty" : bal_qty,
+				"safetyStock" : frappe.db.get_value(
+					doctype = "Item",
+					filters = {'item_code': current_item},
+					fieldname = ['safety_stock'])
+			})
+		
+			data.append(row_data)
+		data = data[::-1]
 
-		if endBalance_qty != 0:
-			endBalance_qty = endBalance_qty[0]['Balance Qty']
-
-		row_data = ({
-			"month" : formattedMonth,
-			"inQty" : stockIn_qty[0]['In Qty'],
-			"outQty": stockOut_qty[0]['Out Qty'] - (2 * stockOut_qty[0]['Out Qty']),
-			"endQty": endBalance_qty,
-			"safetyStock" : frappe.db.get_value(
-				doctype = "Item",
-				filters = {'item_code': conditions.get('name')},
-				fieldname = ['safety_stock']  )
-		})
-		data.append(row_data)
-
-	return data	
-
+	return data
 
 def get_chart(records):
 	if not records:
