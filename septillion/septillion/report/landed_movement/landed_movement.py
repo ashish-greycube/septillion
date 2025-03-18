@@ -6,9 +6,7 @@ from frappe import _
 from datetime import datetime
 from frappe.utils import add_to_date, month_diff
 
-
 def execute(filters=None):
-
 	roles = frappe.get_roles(frappe.session.user)
 	if "Purchase Manager" in roles:
 		canEdit = True
@@ -36,10 +34,22 @@ def execute(filters=None):
 		})
 
 		data.append(row)
-	
-	chart = get_chart(data)
 
-	return columns, data, None, chart
+		message = None
+		if record.get('msg'):
+			message = '''
+				<div class="alert alert-info alert-dismissible fade show" role="alert">
+					{0}
+					<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				'''.format(record.get('msg'))
+		
+	
+	chart = get_chart(data)	
+
+	return columns, data, message, chart
 
 
 def get_columns(canEdit):
@@ -97,21 +107,50 @@ def get_records(filters):
 
 	# First Entry of That Item in Warehouse
 	item_creation = frappe.db.sql("""
-				SELECT DATE_FORMAT(tsle.creation, '%Y-%m') as 'creation_date'
+				SELECT DATE_FORMAT(tsle.posting_datetime, '%Y-%m') as 'creation_date'
 				FROM `tabStock Ledger Entry` as tsle 
 				WHERE tsle.item_code = '{0}'
 				AND tsle.warehouse = 'Stocks - SEP'
-				ORDER BY tsle.creation ASC
+				ORDER BY tsle.posting_datetime ASC
 				LIMIT 1;		
 	""".format(current_item), as_dict = 1)
 
 	# Report Last Date (Before 24 Months From Now)
 	reportLastDate = add_to_date(datetime.now(), months = -23).strftime('%Y-%m') 
 
+	# Main Logic - If Item Does not have any entry yet
+	if len(item_creation) == 0:
+		for i in range(23, -1, -1):
+			formattedMonth = add_to_date(datetime.now(), months = -i).strftime("%b-%Y")
+			row_data = ({
+				"month" : formattedMonth,
+				"inQty" : 0,
+				"outQty" : 0,
+				"endQty" : 0,
+				"safetyStock" : frappe.db.get_value(
+					doctype = "Item",
+					filters = {'item_code': current_item},
+					fieldname = ['safety_stock']),
+				"msg" : "There is no buy or sell entry for this item."
+			})
+
+			data.append(row_data)
+		data = data[::-1]
+
+
 	# Main Logic - If Item is Created Before Report Last Date
-	if item_creation[0]['creation_date'] < reportLastDate:
+	elif item_creation[0]['creation_date'] < reportLastDate:
+		prev_bal = frappe.db.sql("""
+						SELECT tsle.qty_after_transaction as 'previous_stock'
+						FROM `tabStock Ledger Entry` as tsle 
+						WHERE tsle.item_code = '{0}'
+						AND tsle.warehouse = 'Stocks - SEP'
+						ORDER BY tsle.posting_datetime ASC
+						LIMIT 1;
+						""".format(current_item), as_dict = 1)
+		
 		bal_qty = 0.0
-		prev_bal_qty = 0.0
+		prev_bal_qty =  prev_bal[0]['previous_stock']
 
 		month_difference = month_diff(reportLastDate, item_creation[0]['creation_date'])
 
@@ -139,7 +178,10 @@ def get_records(filters):
 					out_qty += entry['actual_qty']
 			
 			# Calculating Balance Qty of That Month
-			bal_qty = (prev_bal_qty + in_qty) + out_qty
+			if i == 0 and in_qty == prev_bal_qty:
+				bal_qty = in_qty + out_qty
+			else:
+				bal_qty = (prev_bal_qty + in_qty) + out_qty
 
 			# Setting Previous Balance Qty For Further Use
 			prev_bal_qty = bal_qty
@@ -174,7 +216,7 @@ def get_records(filters):
 			bal_qty = (prev_bal_qty + in_qty) + out_qty
 
 			# Setting Previous Balance Qty For Further Use
-			prev_bal_qty = bal_qty
+			prev_bal_qty = bal_qty 
 
 			row_data = ({
 				"month" : formattedMonth,
@@ -188,13 +230,10 @@ def get_records(filters):
 			})
 		
 			data.append(row_data)
-
 		data = data[::-1]
 
 	# If Item is Created After Report Last Date
 	elif item_creation[0]['creation_date'] >= reportLastDate:
-		print("Adding the 0 till both date are same")
-
 		bal_qty = 0.0
 		prev_bal_qty = 0.0
 		
@@ -270,7 +309,6 @@ def get_chart(records):
 		safety_stock_values.append(record.safety_stock_qty)
 
 	chart = {
-		'title': "Landed Movement Chart",
 		'data' : {
 			'labels': labels,
 			'datasets' : [

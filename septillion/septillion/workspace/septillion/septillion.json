@@ -1,66 +1,22 @@
 {
  "charts": [],
- "content": "[{\"id\":\"owvD-zLvC8\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Septillion</span>\",\"col\":12}},{\"id\":\"50Iyx3WxSj\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
- "creation": "2025-03-08 19:04:09.879952",
+ "content": "[{\"id\":\"8yafktRAwa\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Septillion</span>\",\"col\":12}},{\"id\":\"jpN_ObpK-U\",\"type\":\"card\",\"data\":{\"card_name\":\"Dashboard\",\"col\":4}}]",
+ "creation": "2025-03-17 13:01:55.504472",
  "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
  "for_user": "",
  "hide_custom": 0,
- "icon": "",
+ "icon": "folder-normal",
  "idx": 0,
- "indicator_color": "darkgrey",
+ "indicator_color": "green",
  "is_hidden": 0,
  "label": "Septillion",
  "links": [
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Item Selling Price",
-   "link_count": 0,
-   "link_to": "Item Selling Price",
-   "link_type": "Report",
-   "onboard": 0,
-   "report_ref_doctype": "Item",
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Item Purchase Price",
-   "link_count": 0,
-   "link_to": "Item Purchase Price",
-   "link_type": "Report",
-   "onboard": 0,
-   "report_ref_doctype": "Item",
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Landed Cost",
-   "link_count": 0,
-   "link_to": "Landed Cost",
-   "link_type": "Report",
-   "onboard": 0,
-   "report_ref_doctype": "Purchase Order",
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Landed Movement",
-   "link_count": 0,
-   "link_to": "Landed Movement",
-   "link_type": "Report",
-   "onboard": 0,
-   "report_ref_doctype": "Item",
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Reports",
+   "label": "Dashboard",
    "link_count": 4,
    "link_type": "DocType",
    "onboard": 0,
@@ -107,7 +63,7 @@
    "type": "Link"
   }
  ],
- "modified": "2025-03-11 15:13:57.314061",
+ "modified": "2025-03-18 11:41:31.326464",
  "modified_by": "Administrator",
  "module": "Septillion",
  "name": "Septillion",
@@ -116,8 +72,15 @@
  "parent_page": "",
  "public": 1,
  "quick_lists": [],
- "roles": [],
- "sequence_id": 32.0,
+ "roles": [
+  {
+   "role": "Purchase Manager"
+  },
+  {
+   "role": "Sales Manager"
+  }
+ ],
+ "sequence_id": 31.0,
  "shortcuts": [],
  "title": "Septillion"
 }
