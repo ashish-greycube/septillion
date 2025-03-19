@@ -131,7 +131,7 @@ def get_records(filters):
 					doctype = "Item",
 					filters = {'item_code': current_item},
 					fieldname = ['safety_stock']),
-				"msg" : "There is no buy or sell entry for this item."
+				"msg" : "There is no buy or sell entry for {0}.".format(current_item)
 			})
 
 			data.append(row_data)
