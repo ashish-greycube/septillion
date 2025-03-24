@@ -188,7 +188,6 @@ def get_conditions(filters):
 
 @frappe.whitelist()
 def change_to_max_discount(doctype, document, value, document_code, msg):
-	print("+"*150)
 	item_id = frappe.get_all(doctype, filters = {"item_name" : document, "item_code" : document_code})
 	doc = frappe.get_doc(doctype, item_id)
 	doc.max_discount = value
