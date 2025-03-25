@@ -112,13 +112,19 @@ def get_chart(records):
 		sell_out_values.append(record.sell_out)
 		end_stock_values.append(record.end_of_month_stock)
 		safety_stock_values.append(record.safety_stock_qty)
+	
+	labels = labels[::-1]
+	buy_in_values = buy_in_values[::-1]
+	sell_out_values = sell_out_values[::-1]
+	end_stock_values = end_stock_values[::-1]
+	safety_stock_values = safety_stock_values[::-1]
 
 	chart = {
 		'data' : {
 			'labels': labels,
 			'datasets' : [
 				{
-					'name': "Buy In Stock(This Color Line Will Show the Changes in Buy In Stock)",
+					'name': "Buy In Stock",
         			'values': buy_in_values,
         			'chartType': 'bar',
 				},

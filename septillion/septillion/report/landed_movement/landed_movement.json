@@ -1,15 +1,16 @@
 {
  "add_total_row": 0,
+ "add_translate_data": 0,
  "columns": [],
  "creation": "2025-03-04 10:43:16.295958",
  "disabled": 0,
  "docstatus": 0,
  "doctype": "Report",
  "filters": [],
- "idx": 9,
+ "idx": 32,
  "is_standard": "Yes",
  "letterhead": null,
- "modified": "2025-03-10 12:07:58.697452",
+ "modified": "2025-03-25 11:40:09.225358",
  "modified_by": "Administrator",
  "module": "Septillion",
  "name": "Landed Movement",
@@ -24,6 +25,9 @@
   },
   {
    "role": "Purchase User"
+  },
+  {
+   "role": "Administrator"
   }
  ],
  "timeout": 0
