@@ -30,7 +30,8 @@ def execute(filters=None):
 			"inc_vat_price" : items.inc_vat_price,
 			"max_discount" : items.max_discount,
 			"exc_vat_discount_price" : items.exc_vat_discount_price,
-			"inc_vat_discount_price": items.inc_vat_discount_price
+			"inc_vat_discount_price": items.inc_vat_discount_price,
+			'db_item_name': items.name
 		})
 		data.append(row)
 
@@ -164,14 +165,7 @@ def get_conditions(filters):
 	return conditions
 
 @frappe.whitelist()
-def change_to_max_discount(doctype, document, value, document_code, msg):
-
-	item_id = frappe.get_all(doctype, filters = {"item_name" : document, "item_code" : document_code})
-	
-	doc = frappe.get_doc(doctype, item_id)
-
-	doc.max_discount = value
-
-	doc.save()
-
+def change_to_max_discount(document, document_code, value):
+	item_id = frappe.get_all("Item", filters = {"item_name" : document, "item_code" : document_code})
+	frappe.db.set_value("Item", item_id, 'max_discount', value)
 	frappe.msgprint("Max Discount is Updated in {0}".format(document_code), alert=True)	

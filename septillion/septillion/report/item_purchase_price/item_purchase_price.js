@@ -85,7 +85,6 @@ frappe.query_reports["Item Purchase Price"] = {
 								method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_max_discount",
 								args: {
 									msg: "Updating Document Value",
-									doctype: "Item",
 									document: cell_item_name,
 									document_code: cell_item_code,
 									value: cell_max_discount,
@@ -117,7 +116,6 @@ frappe.query_reports["Item Purchase Price"] = {
 								method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_safety_stock",
 								args: {
 									msg: "Updating Document Value",
-									doctype: "Item",
 									document: cell_item_name,
 									document_code: cell_item_code,
 									value: cell_safety_stock
@@ -149,7 +147,6 @@ frappe.query_reports["Item Purchase Price"] = {
 								method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_landed_cost",
 								args: {
 									msg: "Updating Document Value",
-									doctype: "Item",
 									document: cell_item_name,
 									document_code: cell_item_code,
 									value: cell_landed_cost

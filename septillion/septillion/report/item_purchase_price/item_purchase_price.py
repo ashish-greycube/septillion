@@ -187,25 +187,19 @@ def get_conditions(filters):
 
 
 @frappe.whitelist()
-def change_to_max_discount(doctype, document, value, document_code, msg):
-	item_id = frappe.get_all(doctype, filters = {"item_name" : document, "item_code" : document_code})
-	doc = frappe.get_doc(doctype, item_id)
-	doc.max_discount = value
-	doc.save()
+def change_to_max_discount(document, value, document_code, msg):
+	item_id = frappe.get_all("Item", filters = {"item_name" : document, "item_code" : document_code})
+	frappe.db.set_value("Item", item_id, 'max_discount', value)
 	frappe.msgprint("Max Discount is Updated in {0}".format(document_code), alert=True)
 
 @frappe.whitelist()
-def change_to_safety_stock(doctype, document, value, document_code, msg):
-	item_id = frappe.get_all(doctype, filters = {"item_name" : document, "item_code" : document_code})
-	doc = frappe.get_doc(doctype, item_id)
-	doc.safety_stock = value
-	doc.save()
+def change_to_safety_stock(document, value, document_code, msg):
+	item_id = frappe.get_all("Item", filters = {"item_name" : document, "item_code" : document_code})
+	frappe.db.set_value("Item", item_id, 'max_discount', value)
 	frappe.msgprint("Safety Stock is Updated in {0}".format(document_code), alert=True)
 
 @frappe.whitelist()
-def change_to_landed_cost(doctype, document, value, document_code,  msg):
-	item_id = frappe.get_all(doctype, filters = {"item_name" : document, "item_code" : document_code})
-	doc = frappe.get_doc(doctype, item_id)
-	doc.custom_landed_cost = value
-	doc.save()
+def change_to_landed_cost(document, value, document_code,  msg):
+	item_id = frappe.get_all("Item", filters = {"item_name" : document, "item_code" : document_code})
+	frappe.db.set_value("Item", item_id, 'max_discount', value)
 	frappe.msgprint("Landed Cost is Updated in {0}".format(document_code), alert=True)

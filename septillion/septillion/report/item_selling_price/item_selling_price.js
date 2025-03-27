@@ -68,7 +68,6 @@ frappe.query_reports["Item Selling Price"] = {
 								method: "septillion.septillion.report.item_selling_price.item_selling_price.change_to_max_discount",
 								args: {
 									msg: "Updating Document Value",
-									doctype: "Item",
 									document: cell_item_name,
 									document_code: cell_item_code,
 									value: cell_max_discount,
