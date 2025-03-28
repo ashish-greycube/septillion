@@ -152,9 +152,7 @@ def get_chart(records):
 @frappe.whitelist()
 def change_to_safety_stock(doctype, document, value,  msg):
 	item_id = frappe.get_all(doctype, filters = {"item_code" : document})
-	doc = frappe.get_doc(doctype, item_id)
-	doc.safety_stock = value
-	doc.save()
+	frappe.db.set_value("Item", item_id, 'safety_stock', value)
 	frappe.msgprint("Safety Stock is Updated in {0}".format(document), alert=True)
 
 def get_records(filters):

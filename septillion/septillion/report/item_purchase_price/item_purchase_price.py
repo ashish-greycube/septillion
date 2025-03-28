@@ -195,11 +195,11 @@ def change_to_max_discount(document, value, document_code, msg):
 @frappe.whitelist()
 def change_to_safety_stock(document, value, document_code, msg):
 	item_id = frappe.get_all("Item", filters = {"item_name" : document, "item_code" : document_code})
-	frappe.db.set_value("Item", item_id, 'max_discount', value)
+	frappe.db.set_value("Item", item_id, 'safety_stock', value)
 	frappe.msgprint("Safety Stock is Updated in {0}".format(document_code), alert=True)
 
 @frappe.whitelist()
 def change_to_landed_cost(document, value, document_code,  msg):
 	item_id = frappe.get_all("Item", filters = {"item_name" : document, "item_code" : document_code})
-	frappe.db.set_value("Item", item_id, 'max_discount', value)
+	frappe.db.set_value("Item", item_id, 'custom_landed_cost', value)
 	frappe.msgprint("Landed Cost is Updated in {0}".format(document_code), alert=True)
