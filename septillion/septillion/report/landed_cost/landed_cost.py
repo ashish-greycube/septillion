@@ -21,8 +21,6 @@ def execute(filters=None):
 		frappe.msgprint("No Data Found")
 		return columns, data
 
-	print(data)
-
 	chart = get_chart(data)
 	return columns, data, None, chart
 
