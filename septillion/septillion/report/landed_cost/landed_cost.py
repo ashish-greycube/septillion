@@ -105,7 +105,7 @@ def get_records(filters):
 			"buy_price" : data.rate,
 			"exc_rate" : data.conversion_rate,
 			"landed_cost" : data.custom_landed_cost,
-			"ship_vs_buy_price" : data.svb_value,
+			"ship_vs_buy_price" : round(data.svb_value, 2),
 			"db_po_name" : data.poi_name
 		})
 		
