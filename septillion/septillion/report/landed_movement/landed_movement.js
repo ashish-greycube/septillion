@@ -33,7 +33,7 @@ frappe.query_reports["Landed Movement"] = {
 				setTimeout(() => {
 
 					if (event.currentTarget.dataset.rowIndex == row) {
-						cell_safety_stock = frappe.query_report.datatable.datamanager.getCell(safety_stock_col_id, row).content
+						cell_safety_stock = frappe.query_report.datatable.datamanager.getCell(safety_stock_col_id, event.currentTarget.dataset.rowIndex).content
 
 						let typeOfValue = Number(cell_safety_stock)
 							if (isNaN(typeOfValue) || typeOfValue == 0) {

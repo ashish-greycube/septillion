@@ -23,6 +23,7 @@ def after_migrate():
                "insert_after": "base_price_list_rate",
                "is_custom_field": 1,
                "is_system_generated": 0,
+               "allow_on_submit": 1
            }
         ]
     }

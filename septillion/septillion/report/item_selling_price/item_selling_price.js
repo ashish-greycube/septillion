@@ -57,8 +57,8 @@ frappe.query_reports["Item Selling Price"] = {
 					setTimeout(() => {
 						if (event.currentTarget.dataset.rowIndex == row) {
 
-							cell_max_discount = frappe.query_report.datatable.datamanager.getCell(max_discount_col_id, row).content
-							cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id, row).content
+							cell_max_discount = frappe.query_report.datatable.datamanager.getCell(max_discount_col_id, event.currentTarget.dataset.rowIndex).content
+							cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id, event.currentTarget.dataset.rowIndex).content
 							
 							let typeOfValue = Number(cell_max_discount)
 							if (isNaN(typeOfValue) || typeOfValue == 0) {

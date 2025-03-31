@@ -181,13 +181,7 @@ def set_latest_landed_cost_in_item(item_code):
 
 @frappe.whitelist()
 def set_landed_cost_in_purchase_order(document_code, value, item_code, po_db_name):
-
-	doc = frappe.get_doc("Purchase Order", document_code)
-
-	for item in doc.items:
-		if item.item_code == item_code:
-			if item.name == po_db_name:
-				frappe.db.set_value("Purchase Order Item", item.name, 'custom_landed_cost', value)
+	frappe.db.set_value("Purchase Order Item", po_db_name, 'custom_landed_cost', value)		
 	frappe.msgprint("Landed Cost is Updated in PO {0}".format(document_code), alert=True)
 
 	set_latest_landed_cost_in_item(item_code)	

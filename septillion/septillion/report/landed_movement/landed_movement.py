@@ -140,6 +140,7 @@ def get_chart(records):
 
 @frappe.whitelist()
 def change_to_safety_stock(document, value):
+	print("*"*100)
 	frappe.db.set_value("Item", document, 'safety_stock', value)
 	frappe.msgprint("Safety Stock is Updated in {0}".format(document), alert=True)
 

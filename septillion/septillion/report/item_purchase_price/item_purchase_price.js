@@ -133,39 +133,6 @@ frappe.query_reports["Item Purchase Price"] = {
 				})
 			}
 
-			// LandedCost field logic for updating the value in Item Doctype
-			for (let row = 0; row <= frappe.query_report.datatable.datamanager.rowCount; row++) {
-				$(".report-wrapper").off('change', `.dt-cell--col-${landed_cost_col_id}, dt-cell--${landed_cost_col_id}-${row}`);
-				$(".report-wrapper").on('change', `.dt-cell--col-${landed_cost_col_id}, dt-cell--${landed_cost_col_id}-${row}`, function (event) {
-
-					setTimeout(() => {
-
-						if (event.currentTarget.dataset.rowIndex == row) {
-
-							cell_landed_cost = frappe.query_report.datatable.datamanager.getCell(landed_cost_col_id, row).content
-							cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id, row).content
-
-							let typeOfValue = Number(cell_landed_cost)
-							if (isNaN(typeOfValue) || typeOfValue == 0) {
-								cell_landed_cost = 0;
-							}
-
-							return frappe.call({
-								method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_landed_cost",
-								args: {
-									msg: "Updating Document Value",
-									document_code: cell_item_code,
-									value: cell_landed_cost
-								},
-								callback: function () {
-									frappe.query_report.refresh()
-								}
-							});
-						}
-
-					}, 100);
-				})
-			}
 
 			// Item Image field logic for zoom image on hover
 			$(".report-wrapper").on('mouseenter', ".item-image", function (event) {
