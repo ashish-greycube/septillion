@@ -18,33 +18,22 @@ def execute(filters=None):
 	columns, data = [], []
 
 	columns = get_columns(canEdit)
-	records = get_records(filters)
+	data = get_records(filters)
 
-	if not records:
+	if not data:
 		frappe.msgprint("No Data Found")
 		return columns, data
-
-	for record in records:
-		row = frappe._dict({
-			"months" : record.get('month'),
-			"buy_in" : record.get('inQty'),
-			"sell_out" : record.get('outQty'),
-			"end_of_month_stock" : record.get('endQty'),
-			"safety_stock_qty" : record.get('safetyStock')
-		})
-
-		data.append(row)
-
-		message = None
-		if record.get('msg'):
-			message = '''
-				<div class="alert alert-info alert-dismissible fade show" role="alert">
-					{0}
-					<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				'''.format(record.get('msg'))
+	
+	message = None
+	if data[0].get('msg'):
+		message = '''
+			<div class="alert alert-info alert-dismissible fade show" role="alert">
+				{0}
+				<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			'''.format(data[0].get('msg'))
 		
 	chart = get_chart(data)	
 
@@ -107,11 +96,11 @@ def get_chart(records):
 	safety_stock_values = []
 
 	for record in records:
-		labels.append(record.months)
-		buy_in_values.append(record.buy_in)
-		sell_out_values.append(record.sell_out)
-		end_stock_values.append(record.end_of_month_stock)
-		safety_stock_values.append(record.safety_stock_qty)
+		labels.append(record['months'])
+		buy_in_values.append(record['buy_in'])
+		sell_out_values.append(record['sell_out'])
+		end_stock_values.append(record['end_of_month_stock'])
+		safety_stock_values.append(record['safety_stock_qty'])
 	
 	labels = labels[::-1]
 	buy_in_values = buy_in_values[::-1]
@@ -150,9 +139,8 @@ def get_chart(records):
 	return chart
 
 @frappe.whitelist()
-def change_to_safety_stock(doctype, document, value,  msg):
-	item_id = frappe.get_all(doctype, filters = {"item_code" : document})
-	frappe.db.set_value("Item", item_id, 'safety_stock', value)
+def change_to_safety_stock(document, value):
+	frappe.db.set_value("Item", document, 'safety_stock', value)
 	frappe.msgprint("Safety Stock is Updated in {0}".format(document), alert=True)
 
 def get_records(filters):
@@ -179,11 +167,11 @@ def get_records(filters):
 			for i in range(23, -1, -1):
 				formattedMonth = add_to_date(datetime.now(), months = -i).strftime("%b-%Y")
 				row_data = ({
-					"month" : formattedMonth,
-					"inQty" : 0,
-					"outQty" : 0,
-					"endQty" : 0,
-					"safetyStock" : frappe.db.get_value(
+					"months" : formattedMonth,
+					"buy_in" : 0,
+					"sell_out" : 0,
+					"end_of_month_stock" : 0,
+					"safety_stock_qty" : frappe.db.get_value(
 						doctype = "Item",
 						filters = {'item_code': current_item},
 						fieldname = ['safety_stock']),
@@ -252,11 +240,11 @@ def get_records(filters):
 			prev_bal_qty = bal_qty 
 
 			row_data = ({
-				"month" : formattedMonth,
-				"inQty" : in_qty,
-				"outQty" : out_qty - (2 * out_qty),
-				"endQty" : bal_qty,
-				"safetyStock" : frappe.db.get_value(
+				"months" : formattedMonth,
+				"buy_in" : in_qty,
+				"sell_out" : out_qty - (2 * out_qty),
+				"end_of_month_stock" : bal_qty,
+				"safety_stock_qty" : frappe.db.get_value(
 					doctype = "Item",
 					filters = {'item_code': current_item},
 					fieldname = ['safety_stock'])
@@ -309,11 +297,11 @@ def get_records(filters):
 				prev_bal_qty = 0.0
 
 			row_data = ({
-				"month" : formattedMonth,
-				"inQty" : in_qty,
-				"outQty" : out_qty - (2 * out_qty),
-				"endQty" : bal_qty,
-				"safetyStock" : frappe.db.get_value(
+				"months" : formattedMonth,
+				"buy_in" : in_qty,
+				"sell_out" : out_qty - (2 * out_qty),
+				"end_of_month_stock" : bal_qty,
+				"safety_stock_qty" : frappe.db.get_value(
 					doctype = "Item",
 					filters = {'item_code': current_item},
 					fieldname = ['safety_stock'])
@@ -354,22 +342,22 @@ def get_records(filters):
 # 		formattedMonth = add_to_date(datetime.now(), months = -i).strftime("%b-%Y")
 # 		if data[1] != []:
 # 			row_data = ({
-# 				"month" : formattedMonth,
-# 				"inQty" : data[1][0]['in_qty'],
-# 				"outQty" : data[1][0]['out_qty'],
-# 				"endQty" : data[1][0]['bal_qty'],
-# 				"safetyStock" : frappe.db.get_value(
+# 				"months" : formattedMonth,
+# 				"buy_in" : data[1][0]['in_qty'],
+# 				"sell_out" : data[1][0]['out_qty'],
+# 				"end_of_month_stock" : data[1][0]['bal_qty'],
+# 				"safety_stock_qty" : frappe.db.get_value(
 # 					doctype = "Item",
 # 					filters = {'item_code': current_item},
 # 					fieldname = ['safety_stock']),
 # 			})
 # 		else:
 # 			row_data = ({
-# 					"month" : formattedMonth,
-# 					"inQty" : 0,
-# 					"outQty" : 0,
-# 					"endQty" : 0,
-# 					"safetyStock" : frappe.db.get_value(
+# 					"months" : formattedMonth,
+# 					"buy_in" : 0,
+# 					"sell_out" : 0,
+# 					"end_of_month_stock" : 0,
+# 					"safety_stock_qty" : frappe.db.get_value(
 # 						doctype = "Item",
 # 						filters = {'item_code': current_item},
 # 						fieldname = ['safety_stock']),

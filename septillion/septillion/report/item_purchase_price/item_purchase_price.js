@@ -40,9 +40,6 @@ frappe.query_reports["Item Purchase Price"] = {
 			if (columnsList[column]['fieldname'] == "max_discount") {
 				max_discount_col_id = column;
 			}
-			else if (columnsList[column]['fieldname'] == "item_name") {
-				item_name_col_id = column;
-			}
 			else if (columnsList[column]['fieldname'] == "safety_stock_qty") {
 				safety_stock_col_id = column;
 			}
@@ -77,15 +74,18 @@ frappe.query_reports["Item Purchase Price"] = {
 					setTimeout(() => {
 						if (event.currentTarget.dataset.rowIndex == row) {
 
-							cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, row).content
 							cell_max_discount = frappe.query_report.datatable.datamanager.getCell(max_discount_col_id, row).content
 							cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id, row).content
+
+							let typeOfValue = Number(cell_max_discount)
+							if (isNaN(typeOfValue) || typeOfValue == 0) {
+								cell_max_discount = 0;
+							}
 
 							return frappe.call({
 								method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_max_discount",
 								args: {
 									msg: "Updating Document Value",
-									document: cell_item_name,
 									document_code: cell_item_code,
 									value: cell_max_discount,
 								},
@@ -108,15 +108,18 @@ frappe.query_reports["Item Purchase Price"] = {
 
 						if (event.currentTarget.dataset.rowIndex == row) {
 
-							cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, row).content
 							cell_safety_stock = frappe.query_report.datatable.datamanager.getCell(safety_stock_col_id, row).content
 							cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id, row).content
+
+							let typeOfValue = Number(cell_safety_stock)
+							if (isNaN(typeOfValue) || typeOfValue == 0) {
+								cell_safety_stock = 0;
+							}
 
 							return frappe.call({
 								method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_safety_stock",
 								args: {
 									msg: "Updating Document Value",
-									document: cell_item_name,
 									document_code: cell_item_code,
 									value: cell_safety_stock
 								},
@@ -139,15 +142,18 @@ frappe.query_reports["Item Purchase Price"] = {
 
 						if (event.currentTarget.dataset.rowIndex == row) {
 
-							cell_item_name = frappe.query_report.datatable.datamanager.getCell(item_name_col_id, row).content
 							cell_landed_cost = frappe.query_report.datatable.datamanager.getCell(landed_cost_col_id, row).content
 							cell_item_code = frappe.query_report.datatable.datamanager.getCell(item_code_col_id, row).content
+
+							let typeOfValue = Number(cell_landed_cost)
+							if (isNaN(typeOfValue) || typeOfValue == 0) {
+								cell_landed_cost = 0;
+							}
 
 							return frappe.call({
 								method: "septillion.septillion.report.item_purchase_price.item_purchase_price.change_to_landed_cost",
 								args: {
 									msg: "Updating Document Value",
-									document: cell_item_name,
 									document_code: cell_item_code,
 									value: cell_landed_cost
 								},

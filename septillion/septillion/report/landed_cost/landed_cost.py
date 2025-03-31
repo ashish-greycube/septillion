@@ -5,35 +5,29 @@ import frappe
 from frappe import _
 
 def execute(filters=None):
+	roles = frappe.get_roles(frappe.session.user)
+	if "Purchase Manager" in roles:
+		canEdit = True
+	else:
+		canEdit = False
+
 	if not filters : filters = {}
 	columns, data = [], []
 
-	columns = get_columns()
-	records = get_records(filters)
+	columns = get_columns(canEdit)
+	data = get_records(filters)
 
-	if not records:
+	if not data:
 		frappe.msgprint("No Data Found")
 		return columns, data
-	
-	for record in records:
-		row = frappe._dict({
-			"purchase_order" : record.name,
-			"date" : record.transaction_date,
-			"currency" : record.currency,
-			"buy_price" : record.rate,
-			"exc_rate" : record.conversion_rate,
-			"landed_cost" : record.landed_cost,
-			"ship_vs_buy_price" : record.svb_value
-		})
 
-		data.append(row)
+	print(data)
 
-		chart = get_chart(data)
-
+	chart = get_chart(data)
 	return columns, data, None, chart
 
 
-def get_columns():
+def get_columns(canEdit):
 	return [
 		{
 			"fieldname" : "purchase_order",
@@ -70,41 +64,53 @@ def get_columns():
 			"fieldname" : "landed_cost",
 			"fieldtype" : "Float",
 			"label" : _("Landed Cost"),
+			"editable" : canEdit,
 			"width" : 120
 		},
 		{
 			"fieldname" : "ship_vs_buy_price",
 			"fieldtype" : "Percentage",
 			"label" : _("Shipment Cost VS Buying Price"),
+			"precision" : 2,
 			"width" : 120
 		},
 	]
 
 def get_records(filters):
-	conditions = get_conditions(filters)
-
-	item = conditions.get('name')
-	from_date = conditions.get('from_date')
-	to_date = conditions.get('to_date')
-
+	item = filters.get('name')
+	from_date = filters.get('from_date')
+	to_date = filters.get('to_date')
+	
+	records = []
 	purchase_data = frappe.db.sql("""
-								SELECT tpo.name, tpo.transaction_date, tpo.currency , tpoi.rate, tpo.conversion_rate 
+								SELECT tpo.name as po_name, tpo.transaction_date, tpo.currency , tpoi.rate, tpo.conversion_rate, tpoi.custom_landed_cost, tpoi.name as poi_name
 								FROM `tabPurchase Order` as tpo INNER JOIN `tabPurchase Order Item` as tpoi
 								WHERE tpoi.parent = tpo.name
 								AND tpoi.item_code = '{0}'
-								AND tpo.transaction_date BETWEEN '{1}' AND '{2}';
+								AND tpo.transaction_date BETWEEN '{1}' AND '{2}'
+							   	ORDER BY tpo.creation DESC;
 							""".format(item, from_date, to_date),
 							as_dict  = 1)
 
 	for data in purchase_data:
-		data.landed_cost = frappe.db.get_value("Item", item, 'custom_landed_cost')
-
-		if data.landed_cost == 0:
+		if data.custom_landed_cost == 0:
 			data.svb_value = 0
 		else:
-			data.svb_value = (data.landed_cost - data.rate) / data.landed_cost
+			data.svb_value = (data.custom_landed_cost - data.rate) / data.custom_landed_cost
 
-	return purchase_data
+		row = frappe._dict({
+			"purchase_order" : data.po_name,
+			"date" : data.transaction_date,
+			"currency" : data.currency,
+			"buy_price" : data.rate,
+			"exc_rate" : data.conversion_rate,
+			"landed_cost" : data.custom_landed_cost,
+			"ship_vs_buy_price" : data.svb_value,
+			"db_po_name" : data.poi_name
+		})
+		
+		records.append(row)
+	return records
 
 def get_conditions(filters):
 	conditions = {}
@@ -129,6 +135,10 @@ def get_chart(data):
 		landed_costs.append(dt.landed_cost)
 		exchange_rates.append(dt.exc_rate)
 
+	labels = labels[::-1]
+	buying_prices = buying_prices[::-1]
+	landed_costs = landed_costs[::-1]
+	exchange_rates = exchange_rates[::-1]
 	
 	chart = {
 		'data': {
@@ -153,3 +163,40 @@ def get_chart(data):
 	}
 
 	return chart
+
+
+def set_latest_landed_cost_in_item(item_code):
+	latest_purchase_order = frappe.db.sql("""
+			SELECT tpoi.custom_landed_cost FROM `tabPurchase Order` tpo INNER JOIN `tabPurchase Order Item` tpoi 
+			WHERE tpoi.item_code = '{0}'
+			AND tpoi.parent  = tpo.name
+			ORDER BY tpo.transaction_date DESC, tpo.name DESC, tpoi.modified DESC
+			LIMIT 1;
+			""".format(item_code), as_dict = 1)
+
+	if len(latest_purchase_order) > 0:
+			custom_landed_cost_value = latest_purchase_order[0].custom_landed_cost
+			if custom_landed_cost_value > 0:
+				frappe.db.set_value("Item", item_code, 'custom_landed_cost', custom_landed_cost_value)
+				frappe.msgprint("Landed Cost is Updated in Item {0}".format(item_code), alert=True)
+
+
+@frappe.whitelist()
+def set_landed_cost_in_purchase_order(document_code, value, item_code, po_db_name):
+
+	doc = frappe.get_doc("Purchase Order", document_code)
+
+	for item in doc.items:
+		if item.item_code == item_code:
+			if item.name == po_db_name:
+				frappe.db.set_value("Purchase Order Item", item.name, 'custom_landed_cost', value)
+	frappe.msgprint("Landed Cost is Updated in PO {0}".format(document_code), alert=True)
+
+	set_latest_landed_cost_in_item(item_code)	
+
+
+@frappe.whitelist()
+def change_landed_cost_on_validation(self, method):
+	for row in self.items:
+		item_code = row.item_code
+		set_latest_landed_cost_in_item(item_code)

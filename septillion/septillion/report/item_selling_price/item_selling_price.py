@@ -17,23 +17,7 @@ def execute(filters=None):
 
 	columns = get_columns(canEdit)
 	
-	items_data = get_items_data(filters)
-
-	for items in items_data:
-		row  = frappe._dict({
-			"item_image" : '<img src ={0} alt = {1} width = "100" height="100" class="item-image">'.format(items.image, items.item_name),
-			"item_code": items.item_code,
-			"item_name": items.item_name,
-			"description": items.description,
-			"stock_sep_qty" : items.stock_sep_qty,
-			"exc_vat_price" : items.exc_vat_price,
-			"inc_vat_price" : items.inc_vat_price,
-			"max_discount" : items.max_discount,
-			"exc_vat_discount_price" : items.exc_vat_discount_price,
-			"inc_vat_discount_price": items.inc_vat_discount_price,
-			'db_item_name': items.name
-		})
-		data.append(row)
+	data = get_items_data(filters)
 
 	return columns, data
 
@@ -113,6 +97,7 @@ def get_columns(canEdit):
 
 def get_items_data(filters):
 	conditions = get_conditions(filters)
+	data = []
 
 	default_selling_price_list = frappe.db.get_single_value('Selling Settings', 'selling_price_list')
 	
@@ -122,39 +107,53 @@ def get_items_data(filters):
 	vat_label = frappe.db.get_value(doctype = "Sales Taxes and Charges Template", filters = {"is_default" : 1})
 	vat_amount = frappe.db.get_value(doctype = "Sales Taxes and Charges", filters = {"parent" : vat_label}, fieldname = ['rate'])
 	
-	data = frappe.get_all(
+	items = frappe.get_all(
 		doctype = "Item",
 		fields = ['image', 'item_code', 'item_name', 'description', 'max_discount'],
 		filters = conditions,
 		order_by = "item_code"
 	)
 
-	for item in data:
+	stock_qty = ""
+	stock_price = ""
+	price_with_vat = ""
+	price_in_disc_exc_vat = ""
+	price_in_disc_in_vat = ""
+
+	for item in items:
 		# Setting Stock Quantity
 		stock_qty = frappe.db.get_value(doctype = "Bin" ,filters = {"item_code": item.item_code, "warehouse": default_warehouse}, fieldname = ['actual_qty'])
 		if stock_qty == None:
-			item.stock_sep_qty = 0
-		else:
-			item.stock_sep_qty = stock_qty
+			stock_qty = 0
 
 		# Setting Price Exc VAT
 		stock_price = frappe.db.get_value(doctype = "Item Price", filters = {"item_code": item.item_code, "price_list": default_selling_price_list}, fieldname = ['price_list_rate'])
 		if stock_price == None:
-			item.exc_vat_price =  0.00
-		else:
-			item.exc_vat_price = stock_price	
+			stock_price =  0.00
 	
 		# Setting Price Inc VAT
-		price_with_vat = item.exc_vat_price + (item.exc_vat_price * vat_amount / 100)
-		item.inc_vat_price = price_with_vat
+		price_with_vat = stock_price + (stock_price * vat_amount / 100)
 
 		# Setting Discount Price Exc VAT
-		price_in_disc_exc_vat = item.exc_vat_price - (item.exc_vat_price * item.max_discount / 100)
-		item.exc_vat_discount_price = price_in_disc_exc_vat
-
+		price_in_disc_exc_vat = stock_price - (stock_price * item.max_discount / 100)
+		
 		# Setting Discount Price Inc VAT
 		price_in_disc_in_vat = price_with_vat - (price_with_vat * item.max_discount / 100)
-		item.inc_vat_discount_price = price_in_disc_in_vat
+
+		row  = frappe._dict({
+			"item_image" : '<img src ="{0}" alt = "{1}" width = "100" height="100" class="item-image">'.format(item.image, item.item_name),
+			"item_code": item.item_code,
+			"item_name": item.item_name,
+			"description": item.description,
+			"stock_sep_qty" : stock_qty,
+			"exc_vat_price" : stock_price,
+			"inc_vat_price" : price_with_vat,
+			"max_discount" : item.max_discount,
+			"exc_vat_discount_price" : price_in_disc_exc_vat,
+			"inc_vat_discount_price": price_in_disc_in_vat,
+		})
+		data.append(row)
+
 	return data
 
 def get_conditions(filters):
@@ -165,7 +164,6 @@ def get_conditions(filters):
 	return conditions
 
 @frappe.whitelist()
-def change_to_max_discount(document, document_code, value):
-	item_id = frappe.get_all("Item", filters = {"item_name" : document, "item_code" : document_code})
-	frappe.db.set_value("Item", item_id, 'max_discount', value)
+def change_to_max_discount(document_code, value):
+	frappe.db.set_value("Item", document_code, 'max_discount', value)
 	frappe.msgprint("Max Discount is Updated in {0}".format(document_code), alert=True)	

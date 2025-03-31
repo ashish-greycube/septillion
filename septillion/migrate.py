@@ -8,8 +8,19 @@ def after_migrate():
            {
                "fieldname": "custom_landed_cost",
                "fieldtype": "Currency",
-               "label": "Landed Cost(Ex. VAT)",
+               "label": "Latest Landed Cost",
                "insert_after": "max_discount",
+               "is_custom_field": 1,
+               "is_system_generated": 0,
+               "read_only" : 1
+           }
+        ],
+        "Purchase Order Item" : [
+           {
+               "fieldname": "custom_landed_cost",
+               "fieldtype": "Currency",
+               "label": "Landed Cost",
+               "insert_after": "base_price_list_rate",
                "is_custom_field": 1,
                "is_system_generated": 0,
            }

@@ -141,13 +141,11 @@ after_migrate = 'septillion.migrate.after_migrate'
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Purchase Order": {
+		"validate": "septillion.septillion.report.landed_cost.landed_cost.change_landed_cost_on_validation",
+	}
+}
 
 # Scheduled Tasks
 # ---------------
