@@ -91,10 +91,14 @@ def get_records(filters):
 							as_dict  = 1)
 
 	for data in purchase_data:
-		if data.custom_landed_cost == 0:
+		if data.rate == 0:
 			data.svb_value = 0
 		else:
-			data.svb_value = (data.custom_landed_cost - data.rate) / data.custom_landed_cost
+			thb_amount = data.rate * data.conversion_rate
+			shipment_cost = data.custom_landed_cost - thb_amount
+			svb_val = shipment_cost / thb_amount * 100
+
+			data.svb_value = svb_val
 
 		row = frappe._dict({
 			"purchase_order" : data.po_name,
@@ -103,7 +107,7 @@ def get_records(filters):
 			"buy_price" : data.rate,
 			"exc_rate" : data.conversion_rate,
 			"landed_cost" : data.custom_landed_cost,
-			"ship_vs_buy_price" : round(data.svb_value, 2),
+			"ship_vs_buy_price" : round(data.svb_value, 3),
 			"db_po_name" : data.poi_name
 		})
 		

@@ -97,7 +97,7 @@ def get_columns(canEdit):
 		{
 			"fieldname" : "profit_percentage",
 			"fieldtype" : "Percentage",
-			"label" : _('Profit (%)'),
+			"label" : _('Profit % from Landed Cost'),
 			"width" : 100
 		}
 	]
