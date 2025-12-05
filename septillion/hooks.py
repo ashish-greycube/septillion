@@ -28,6 +28,8 @@ app_license = "mit"
 # app_include_css = "/assets/septillion/css/septillion.css"
 # app_include_js = "/assets/septillion/js/septillion.js"
 
+app_include_js = ["/assets/septillion/js/toogle_full_width.js"]
+
 # include js, css files in header of web template
 # web_include_css = "/assets/septillion/css/septillion.css"
 # web_include_js = "/assets/septillion/js/septillion.js"
