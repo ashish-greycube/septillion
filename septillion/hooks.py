@@ -144,6 +144,9 @@ after_migrate = 'septillion.migrate.after_migrate'
 doc_events = {
 	"Purchase Order": {
 		"validate": "septillion.septillion.report.landed_cost.landed_cost.change_landed_cost_on_validation",
+	},
+    "Communication": {
+        "validate": "septillion.api.update_modified_time_based_on_save_of_communication_receive"
 	}
 }
 
